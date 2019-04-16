@@ -29,6 +29,35 @@ def file_read(path, num_fields, seperator=','or'|'or'*', header=False):
                         raise ValueError("*** number of fields in the file is not equal to expected numnber of fields ***")
                     else:
                         yield fields
+                        
+class major:
+    def __init__(self, name, passing=None):
+        self._name = name
+        self._requried = set()
+        self._electives = set()
+        self._passing_grade = {'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C'}
+
+    def pt_row(self):
+        return[self._name, self._requried, self._electives]
+
+    def add_course(self, flag, course):
+        if flag == 'E':
+            self._electives.add(course)
+        elif flag == 'R':
+            self._requried.add(course)
+        else:
+            raise ValueError("value error forund unexpected flag in majors file")
+
+    def grade_check(self, courses):
+        completed_courses = {course for course, grade in courses.items() if grade in self._passing_grade}
+        remaining_requried_course = self._requried - completed_courses
+        if len(self._electives.intersection(completed_courses)) >= 1:
+            remaining_elective_course = None
+        else:
+            remaining_elective_course = self._electives
+
+        return[completed_courses, remaining_requried_course, remaining_elective_course]
+
 
 
 
