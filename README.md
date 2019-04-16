@@ -60,7 +60,6 @@ class major:
 
 
 
-
 class Repository:
     def __init__(self, path_dir):
         """taking path for the files student, grades, instructors
@@ -68,15 +67,18 @@ class Repository:
         self.path_dir = path_dir
         self._students = dict()
         self._instructors = dict()
+        self._major = dict()
         
 
         self.add_instructors(os.path.join(path_dir, "instructors.txt"))
         self.add_students(os.path.join(path_dir, "students.txt"))
         self.add_grades(os.path.join(path_dir, "grades.txt"))
+        self.add_major(os.path.join(path_dir, "majors.txt"))
 
    
         self.student_pt()
         self.instructor_pt()
+        self.major_pt()
 
     
     
@@ -88,7 +90,7 @@ class Repository:
                 if cwid in self._students:
                     print(f"cwid {cwid} already read from the file")
                 else:
-                    self._students[cwid] = Student(cwid, name, major)
+                    self._students[cwid] = Student(cwid, name, major, self._major[major])
         except ValueError:
             print("value error")
 
@@ -121,16 +123,38 @@ class Repository:
             if instructor_cwid in self._instructors:
                 self._instructors[instructor_cwid].add_course(course)
             else:
-                print(f"student cwid {instructor_cwid} not in file")
+                print(f"student cwit {instructor_cwid} not in file")
+
     
+    def add_major(self, path_dir):
+        try:
+            for dept, requried, electives in file_read(path_dir, 3, seperator='\t', header=False):
+                if dept in self._major:
+                    self._major[dept].add_course(requried, electives)
+                else:
+                    self._major[dept] = major(dept)
+                    self._major[dept].add_course(requried, electives)
+        except ValueError:
+            print("value error: ")
+
 
     
     
     def student_pt(self):
-        pt = PrettyTable(field_names=['cwid', 'name', 'completed courses'])
+        pt = PrettyTable(
+            field_names=['cwid', 'name', 'major', 'completed', 'remaining', 'elective'])
         for Student in self._students.values():
-            pt.add_row(Student.details())
+            pt.add_row(Student.pt_row())
         print("student pretty table")
+        print(pt)
+    
+    
+    
+    def major_pt(self):
+        pt = PrettyTable(
+            field_names=['major', 'requried course', 'elective course'])
+        for major in self._major.values():
+            pt.add_row(major.pt_row())
         print(pt)
 
     
@@ -142,7 +166,6 @@ class Repository:
                 pt.add_row(course)
         print("instructor pretty table")
         print(pt)
-
 
 
 class Student:
